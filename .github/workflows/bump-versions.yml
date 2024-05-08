@@ -14,7 +14,7 @@ jobs:
           - tool: rattler-build
             repo: prefix-dev/rattler-build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.1.5
       - name: Bump versions
         id: bump
         run: |
@@ -25,7 +25,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@b1ddad2c994a25fbc81a28b3ec0e368bb2021c50
+        uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e
         with:
           title: Bump ${{ matrix.tool }} to ${{ steps.bump.outputs.new-version }}
           delete-branch: true
