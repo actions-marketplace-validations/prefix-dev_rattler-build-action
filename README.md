@@ -36,11 +36,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build conda package
-      uses: prefix-dev/rattler-build-action@v0.1.1
+      uses: prefix-dev/rattler-build-action@v0.2.34
 ```
 
 > [!WARNING]
-> Since rattler-build is still experimental and the API can change in minor versions, please pin this action to its minor version, i.e., `prefix-dev/rattler-build-action@v0.1.1`.
+> Since rattler-build is still experimental and the API can change in minor versions, please pin this action to its minor version, i.e., `prefix-dev/rattler-build-action@v0.2.34`.
 
 > [!TIP]
 > You can use dependabot to automatically update the version of `rattler-build-action`. Add the following to your `.github/dependabot.yml`:
@@ -89,18 +89,18 @@ jobs:
         include:
           - os: ubuntu-latest
             target-platform: linux-64
-          - os: ubuntu-latest
+          - os: ubuntu-24.04-arm
             target-platform: linux-aarch64
           - os: windows-latest
             target-platform: win-64
-          - os: macos-latest
+          - os: macos-13
             target-platform: osx-64
-          - os: macos-14
+          - os: macos-latest
             target-platform: osx-arm64
     steps:
     - uses: actions/checkout@v4
     - name: Build conda package
-      uses: prefix-dev/rattler-build-action@v0.1.1
+      uses: prefix-dev/rattler-build-action@v0.2.34
       with:
         # needs to be unique for each matrix entry
         artifact-name: package-${{ matrix.target-platform }}
@@ -117,7 +117,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build conda package
-      uses: prefix-dev/rattler-build-action@v0.1.1
+      uses: prefix-dev/rattler-build-action@v0.2.34
     - run: |
         for pkg in $(find output -type f \( -name "*.conda" -o -name "*.tar.bz2" \) ); do
           echo "Uploading ${pkg}"
@@ -127,6 +127,31 @@ jobs:
         QUETZ_SERVER_URL: https://my.quetz.server
         QUETZ_API_KEY: ${{ secrets.QUETZ_API_KEY }}
         QUETZ_CHANNEL: my-channel
+```
+
+### Upload to prefix.dev via OIDC from GitHub Actions
+
+This requires you to configure the workflow as a trusted publisher for your target channel (see [Trusted Publishing to Conda Channels](https://prefix.dev/blog/trusted_publishing_to_conda_channels)).
+
+```yml
+jobs:
+  build:
+    name: Build package
+    runs-on: ubuntu-latest
+    
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build conda package
+      uses: prefix-dev/rattler-build-action@v0.2.34
+    - run: |
+        for pkg in $(find output -type f \( -name "*.conda" -o -name "*.tar.bz2" \) ); do
+          echo "Uploading ${pkg}"
+          rattler-build upload prefix -c my-channel "${pkg}"
+        done
 ```
 
 ### Use private channel
@@ -147,7 +172,7 @@ jobs:
         echo '{"my.quetz.server": {"CondaToken": "${{ secrets.QUETZ_API_KEY }}"}}' > "$RATTLER_AUTH_FILE"
         echo "RATTLER_AUTH_FILE=$RATTLER_AUTH_FILE" >> "$GITHUB_ENV"
     - name: Build conda package
-      uses: prefix-dev/rattler-build-action@v0.1.1
+      uses: prefix-dev/rattler-build-action@v0.2.34
       with:
         build-args: -c conda-forge -c https://my.quetz.server/get/my-channel
 ```
